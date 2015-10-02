@@ -71,7 +71,6 @@ public class ControllerFront extends Controller{
                     ipIA = InetAddress.getByName(ipDestino) ;
                     socketUDP = new DatagramSocket() ;  
 
-
                 }catch( IOException ex ){
                    ex.printStackTrace();
                 }
@@ -160,6 +159,16 @@ public class ControllerFront extends Controller{
     public void executarRespostas(){
         if(resposta.get("CONFIRMAR") != null){
             conectado = true;
+            return;
         }    
+        
+        if(resposta.get("JOGADA") != null){
+            return;
+        } 
+        
+        if(resposta.get("JOGADAFINAL") != null){
+            return;
+        } 
+
     }
 }

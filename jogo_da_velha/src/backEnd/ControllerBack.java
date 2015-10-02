@@ -142,11 +142,13 @@ public class ControllerBack extends Controller{
         
         if(requisicao.get("JOGADA") != null){
             view.setJogadaOutro(requisicao.get("JOGADA"));
+            resposta.put("JOGADA", "OK");
             return;
         }
         
         if(requisicao.get("JOGADAFINAL") != null){
             view.setJogadaFinalOutro(requisicao);
+            resposta.put("JOGADAFINAL", "OK");
             return;
         }
         

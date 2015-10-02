@@ -39,7 +39,7 @@ public class ViewFront extends javax.swing.JFrame {
     
     public void anunciarConexao(HashMap<String, String> requisicao){             
         if(!ctrl.isConectado()){
-            this.info.setText("Nova solicitação de jogo");
+            info.setText("Nova solicitação de jogo");
             ctrl.setTipoCon(requisicao.get("CONEXAO")); 
             if(requisicao.get("CONEXAO").equals("UDP")){
                 porta.setText(requisicao.get("portaUDP"));
@@ -54,7 +54,7 @@ public class ViewFront extends javax.swing.JFrame {
             minhaCor.setBackground(ctrl.getCor());
             desabComandos(false);            
         }else{
-            this.info.setText("O Jogador Aceitou sua solicitação. Inicie a partida!");
+            info.setText("O Jogador Aceitou sua solicitação. Inicie a partida!");
         }                    
     }   
     
@@ -267,7 +267,7 @@ public void setJogadaFinalOutro(HashMap<String, String> requisicao){
                 setInfo("PARABÉNS! VOCÊ GANHOU!!!");
             }
             ctrl.enviarRequisicao();
-            ctrl.setBloqueio(true);
+//            ctrl.setBloqueio(true);
             panel.setBackground(ctrl.getCor());            
         
         
