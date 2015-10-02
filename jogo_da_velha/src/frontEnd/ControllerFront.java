@@ -5,7 +5,6 @@
  */
 package frontEnd;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
@@ -20,33 +19,35 @@ import infra.Controller;
 import java.io.ObjectInputStream;
 
 /**
- *
- * @author thiago
+ * Classe responsável pelo controle do Cliente (FrontEnd)
+ * @author Thiago Goveia
  */
 public class ControllerFront extends Controller{
     
-    private Socket socket;
-    private DatagramSocket socketUDP;
-    private Integer portaDestino;
-    private String ipDestino;
-    private Color cor;
-    private Color corOutro;
-    private final Map<String, String> requisicao;
-    private Map<String, String> resposta;
-    private ObjectOutputStream saida;
-    private ObjectInputStream entrada;
-    private InetAddress ipIA;
-    private final static int TAMPACOTE = 1024 ;
-    private String tipoCon;
+    private Socket                      socket;
+    private DatagramSocket              socketUDP;
+    private Integer                     portaDestino;
+    private String                      ipDestino;
+    private final Map<String, String>   requisicao;
+    private Map<String, String>         resposta;
+    private ObjectOutputStream          saida;
+    private ObjectInputStream           entrada;
+    private InetAddress                 ipInet;
+    private final static int            TAMANHO_PAC = 1024 ;
+    private String                      tipoCon;
 
+    
+    /**
+     * Instancia os Maps de requisição e resposta
+     */
     public ControllerFront() {
-        cor = Color.RED;
-        corOutro = Color.BLUE;
         requisicao = new HashMap();
         resposta = new HashMap();
     }   
     
-    
+    /**
+     * Dispara a thread de conexão do Cliente via TCP
+     */
     public void conectarTCP(){
         (new Thread(
                 new Runnable() {
@@ -62,13 +63,17 @@ public class ControllerFront extends Controller{
         )).start();
     }
     
+    
+    /**
+     * Dispara a thread de conexão do Cliente via UDP
+     */    
     public void conectarUDP(){
         (new Thread(new Runnable() {
             @Override
             public void run() {                
                 try
                 {
-                    ipIA = InetAddress.getByName(ipDestino) ;
+                    ipInet = InetAddress.getByName(ipDestino) ;
                     socketUDP = new DatagramSocket() ;  
 
                 }catch( IOException ex ){
@@ -78,75 +83,40 @@ public class ControllerFront extends Controller{
         })).start();  
     }     
     
-    public void setRequisicao(String key, String msg){
-        bloqueio = true;
-        requisicao.put(key, msg);
-    }
     
-    public void setDestino(String ip, Integer porta){
-        ipDestino = ip;
-        portaDestino = porta;
-    }
-    
-    public Integer getPorta(){
-        return portaDestino;
-    }
-    
-    public Color getCor(){
-        return cor;
-    }
-    
-    public Color getCorOutro(){
-        return corOutro;
-    }    
-    
-    public void trocaCor(){
-        Color aux = cor;
-        cor = corOutro;
-        corOutro = aux;
-    }
-    
-    
-    public void setTipoCon(String con){
-        tipoCon = con;
-    }
-    
-    public String getTipoCon(){
-        return tipoCon;
-    } 
-    
-    
+    /**
+     * Envia uma requisição de acordo com o Tipo da Conexão.
+     * Após enviar a requisição, os Soquetes aguardam uma resposta, a qual é processada pelo método executarRespostas().
+     */
     public void enviarRequisicao() {
         try{
             
             if(tipoCon.equals("UDP")){
+                //Envio da Requisição
                 byte [] data = serializar(requisicao) ;
-                DatagramPacket pacote = new DatagramPacket( data, data.length, ipIA, portaDestino ) ;
-
+                DatagramPacket pacote = new DatagramPacket( data, data.length, ipInet, portaDestino ) ;               
                 socketUDP.send( pacote );
                 socketUDP.setSoTimeout( 5000 ) ;
-
-                pacote.setData( new byte[TAMPACOTE] ) ;
-
+                
+                //Recebimento da Resposta
+                pacote.setData( new byte[TAMANHO_PAC] ) ;
                 socketUDP.receive( pacote ) ;
                 resposta = deserializar(pacote.getData());
             }else{
-
+                //Envio da Requisição
                 saida = new ObjectOutputStream(socket.getOutputStream());
                 saida.flush();
                 saida.writeObject(requisicao);
                 
+                //Recebimento da Resposta
                 entrada = new ObjectInputStream(socket.getInputStream());
-                resposta = (HashMap)entrada.readObject();
-                
+                resposta = (HashMap)entrada.readObject();                
             }            
             
-            if(!resposta.isEmpty()){
-                executarRespostas();
-                resposta.clear();
-            }
+            executarRespostas();
             
-            
+            //Limpa os mapas de requisição e resposta para futuras requisições
+            resposta.clear();                     
             requisicao.clear();  
         }catch(IOException e){
             e.printStackTrace();
@@ -156,6 +126,9 @@ public class ControllerFront extends Controller{
         }
     }
     
+    /**
+     * Executas a resposta de uma dada requisição
+     */
     public void executarRespostas(){
         if(resposta.get("CONFIRMAR") != null){
             conectado = true;
@@ -171,4 +144,33 @@ public class ControllerFront extends Controller{
         } 
 
     }
+    
+    /**
+     * Adiciona uma mensagem à requisição a ser enviada ao servidor.
+     * A Cada requisição feita, a aplicação é bloqueada, até que ela receba uma requisição.
+     * @param key   Chave da Mensagem
+     * @param msg   Corpo da Mensagem
+     */
+    public void setMsgRequisicao(String key, String msg){
+        bloqueio = true;
+        requisicao.put(key, msg);
+    }
+    
+    /**
+     * Configura o destino de comunicação do Cliente
+     * @param ip    IP de Destino
+     * @param porta     Porta de Destino
+     */
+    public void setDestino(String ip, Integer porta){
+        ipDestino = ip;
+        portaDestino = porta;
+    }
+       
+    /**
+     * Configura o tipo da Conexão a ser estabelecida
+     * @param con   Tipo da Conexão (TCP ou UDP)
+     */
+    public void setTipoConexao(String con){
+        tipoCon = con;
+    }    
 }
