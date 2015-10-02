@@ -8,6 +8,7 @@ package aplicacao;
 
 import backEnd.ControllerBack;
 import frontEnd.ViewFront;
+import java.net.UnknownHostException;
 
 /**
  *
@@ -19,7 +20,7 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) { 
+    public static void main(String[] args) throws UnknownHostException { 
         //Instância da Servidor da Aplicação
         servidor = new ControllerBack();
         //Disponibiliza os Serviços como TCP e UDP

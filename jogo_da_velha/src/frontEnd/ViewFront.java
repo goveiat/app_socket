@@ -16,20 +16,21 @@ import javax.swing.border.Border;
 
 
 /**
- *
+ * Classe responsável pela exibição do cliente (FrontEnd) e recepção dos eventos
  * @author Thiago Goveia
  */
 public class ViewFront extends javax.swing.JFrame {
     
-    private final ControllerFront cliente;
-    private int [][] matrizCtrl = new int[3][3];
-    private Color cor;
-    private Color corOutro;
+    private final ControllerFront   cliente;
+    private int [][]                matrizCtrl;
+    private Color                   cor;
+    private Color                   corOutro;
     
     /**
-     * Inicia os componentes do form, Instancia o controle e as inicializa as cores
+     * Inicia os componentes do form, Instancia o cliente e matriz de controle e inicializa as cores
      */
     public ViewFront() {
+        matrizCtrl = new int[3][3];
         initComponents(); 
         cliente = new ControllerFront();
         cor = Color.RED;
@@ -68,7 +69,7 @@ public class ViewFront extends javax.swing.JFrame {
     /**
      * Troca a cor ao receber uma conexão quando ainda não está conectado
      */
-    public void trocaCor(){
+    private void trocaCor(){
         Color aux = cor;
         cor = corOutro;
         corOutro = aux;
@@ -147,7 +148,7 @@ public class ViewFront extends javax.swing.JFrame {
      * Exibe a jogada realizada (Pinta o panel) e envia uma mensagem ao adversário, informando o local da jogada.
      * @param panel Local em que a jogada foi feita (panel que recebeu o clique)
      */
-    public void jogada(javax.swing.JPanel panel){ 
+    private void jogada(javax.swing.JPanel panel){ 
         //Obtenção das coordenadas por meio do nome do objeto (panel) clicado
         String pos = panel.getName();
         int i = Character.getNumericValue(pos.charAt(1))-1;
@@ -179,7 +180,7 @@ public class ViewFront extends javax.swing.JFrame {
     /**
      * Inicia um pool de Thread para verificar se o seu status (cliente/frontend) recebeu a resposta de confirmação de conexão.
      */
-    public void statusPool(){
+    private void statusPool(){
         (new Thread(
                 new Runnable() {
                     @Override
@@ -205,7 +206,7 @@ public class ViewFront extends javax.swing.JFrame {
      * Desabilita os comandos do formulário ao realizar ou ao receber uma requisição de conexão
      * @param btn 
      */
-    public void desabilitarForm(Boolean btn){
+    private void desabilitarForm(Boolean btn){
         radioTCP.setEnabled(false);
         radioUDP.setEnabled(false);
         ip.setEnabled(false);
@@ -222,7 +223,7 @@ public class ViewFront extends javax.swing.JFrame {
      * É feita a verificação na matriz de controle por linhas, colunas e nas diagonais
      * @return 0(Jogada convencional), 1, 2, 3 (Venceu na linha), 4, 5, 6(Venceu na coluna), 7,8(Venceu na diagonal)
      */
-    public int checaVencedor(){
+    private int checaVencedor(){
       int i;
       //Verifica as Linhas
       for(i=0; i<3; i++){
@@ -258,7 +259,7 @@ public class ViewFront extends javax.swing.JFrame {
      * Exibe uma borda intermitente nos panel que possuem a jogada vencedora
      * @param tipo 
      */
-    public void destacaVencedor(final int tipo){
+    private void destacaVencedor(final int tipo){
         (new Thread(
                 new Runnable() {
                     @Override
@@ -365,7 +366,7 @@ public class ViewFront extends javax.swing.JFrame {
      * Escreve uma mensagem no label do informações do jogador
      * @param msg 
      */
-    public void setInfo(String msg){
+    private void setInfo(String msg){
         info.setText(msg);
     }
     

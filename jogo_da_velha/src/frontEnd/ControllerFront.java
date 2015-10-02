@@ -51,7 +51,7 @@ public class ControllerFront extends Controller{
     /**
      * Dispara a thread de conexão do Cliente via TCP
      */
-    public void conexaoTCP(){
+    private void conexaoTCP(){
         (new Thread(
                 new Runnable() {
                     @Override
@@ -71,7 +71,7 @@ public class ControllerFront extends Controller{
     /**
      * Dispara a thread de conexão do Cliente via UDP
      */    
-    public void conexaoUDP(){
+    private void conexaoUDP(){
         (new Thread(new Runnable() {
             @Override
             public void run() {                
@@ -158,7 +158,7 @@ public class ControllerFront extends Controller{
     /**
      * Executas a resposta de uma dada requisição
      */
-    public void executarRespostas(){
+    private void executarRespostas(){
         if(resposta.get("CONFIRMAR") != null){
             conectado = true;
             return;
@@ -201,6 +201,7 @@ public class ControllerFront extends Controller{
     
     /**
      * Retorna o tipo da Conexão a ser estabelecida
+     * @return UDP ou TCP
      */
     public String getTipoConexao(){
         return tipoCon;

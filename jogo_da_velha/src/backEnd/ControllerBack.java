@@ -17,6 +17,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,39 +25,47 @@ import java.util.logging.Logger;
 
 
 /**
- *
+ * Classe responsável pelo controle do Servidor (BackEnd)
  * @author Thiago Goveia
  */
 public class ControllerBack extends Controller{
-    private ServerSocket socket;
-    private DatagramSocket socketUDP;
-    private final ViewFront view;
-    private ObjectInputStream entrada;
-    private ObjectOutputStream saida;    
-    private HashMap<String, String> requisicao;
-    private HashMap<String, String> resposta;
-    private final static int TAMPACOTE = 1024 ;
+    private ServerSocket                socket;
+    private DatagramSocket              socketUDP;
+    private final ViewFront             view;
+    private ObjectInputStream           entrada;
+    private ObjectOutputStream          saida;    
+    private HashMap<String, String>     requisicao;
+    private HashMap<String, String>     resposta;
+    private final static int            TAMANHO_PAC = 1024 ;
  
     
 
-    public ControllerBack() {
+    /**
+     * Instancia a view, a requisição, a resposta e inicializa o status de conexão e bloqueio
+     */
+    public ControllerBack() throws UnknownHostException {
         view = new ViewFront();
         view.setVisible(true);  
         requisicao = new HashMap();
         resposta = new HashMap();
         conectado = false;
         bloqueio = true;
+        meuIp = InetAddress.getLocalHost().getHostAddress();
     }
     
 
     
+    /**
+     * Disponibiliza o servidor TCP por meio da abertura de conexão. 
+     * O Servidor recebe uma requisição, a processa, e envia uma resposta
+     */
     public void disponibilizarServidorTCP(){
         (new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     socket = new ServerSocket(0);
-                    meuIp = InetAddress.getLocalHost().getHostAddress();
+                    //A porta é obtida dinamicamente                    
                     minhaPorta = socket.getLocalPort(); 
                     view.setMinhaPorta(minhaPorta);
                     view.setMeuIP(meuIp);
@@ -64,17 +73,17 @@ public class ControllerBack extends Controller{
 
                     while(true){
                            try {
+                               //Recebimento de requisição
                                 entrada = new ObjectInputStream(socketCli.getInputStream());
-                                requisicao = (HashMap)entrada.readObject();
-                                
+                                requisicao = (HashMap)entrada.readObject();                                
                                 executarRequisicao();
-                                
-                                if(!resposta.isEmpty()){                                
-                                    saida = new ObjectOutputStream(socketCli.getOutputStream());
-                                    saida.flush();
-                                    saida.writeObject(resposta);
-                                    resposta.clear();
-                                }
+                                  
+                                //Envio da resposta
+                                saida = new ObjectOutputStream(socketCli.getOutputStream());
+                                saida.flush();
+                                saida.writeObject(resposta);
+                                resposta.clear();
+
 
                             } catch (ClassNotFoundException ex) {
                                 Logger.getLogger(ControllerFront.class.getName()).log(Level.SEVERE, null, ex);
@@ -90,6 +99,11 @@ public class ControllerBack extends Controller{
     }
     
     
+    
+    /**
+     * Disponibiliza o servidor UDP para recebimento de datagramas.
+     * O Servidor recebe uma requisição, a processa, e envia uma resposta
+     */
     public void disponibilizarServidorUDP(){
         (new Thread(new Runnable() {
             @Override
@@ -97,23 +111,21 @@ public class ControllerBack extends Controller{
                       try
                         {                           
                            socketUDP = new DatagramSocket() ;
+                           //A porta é obtida dinamicamente
                            minhaPortaUDP = socketUDP.getLocalPort();
                            view.setMinhaPortaUDP(minhaPortaUDP);
                            while(true){
-                                DatagramPacket pacote = new DatagramPacket( new byte[TAMPACOTE], TAMPACOTE ) ;
-
+                               //Recebimento de requisição
+                                DatagramPacket pacote = new DatagramPacket( new byte[TAMANHO_PAC], TAMANHO_PAC ) ;
                                 socketUDP.receive( pacote ) ;
-
                                 requisicao = deserializar(pacote.getData());
-                                executarRequisicao();                              
+                                executarRequisicao();                           
 
-                                if(!resposta.isEmpty()){
-                                    byte[] respSel  = serializar(resposta);
-                                    pacote.setData(respSel);
-                                    socketUDP.send( pacote ) ;
-                                    resposta.clear();
-                                }
-                              
+                                //Envio da Resposta
+                                byte[] respSel  = serializar(resposta);
+                                pacote.setData(respSel);
+                                socketUDP.send( pacote ) ;
+                                resposta.clear();
                           }  
                        }
                        catch( Exception e )
@@ -126,11 +138,15 @@ public class ControllerBack extends Controller{
     
    
      
-    
-    public void executarRequisicao(){
+    /**
+     * Executa uma requisição (Sempre após um evento de clique).
+     * Os dados da requisição podem ser relativos à solicitação de conexão ou à uma jogada
+     */
+    private void executarRequisicao(){
         if(requisicao.get("CONEXAO") != null){
             view.anunciarConexao(requisicao);
             resposta.put("CONFIRMAR", "OK");
+            //Se ao receber uma conexão o jogador local já estiver conectado, ele é desbloqueado para iniciar a partida
             if(conectado){
                 bloqueio = false;
             }
@@ -148,21 +164,8 @@ public class ControllerBack extends Controller{
             resposta.put("JOGADAFINAL", "OK");
             return;
         }
-        
-        System.exit(1);
-            
+                  
     }
     
-    public Integer getPorta(){
-        return minhaPorta;
-    }
-    
-    public Integer getPortaUDP(){
-        return minhaPortaUDP;
-    }
-    
-    public String getIP(){
-        return meuIp;
-    }
     
 }
