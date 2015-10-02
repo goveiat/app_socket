@@ -6,13 +6,9 @@
 package frontEnd;
 
 import java.awt.Color;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
@@ -21,26 +17,35 @@ import javax.swing.border.Border;
 
 /**
  *
- * @author thiago
+ * @author Thiago Goveia
  */
 public class ViewFront extends javax.swing.JFrame {
     
-    private final ControllerFront ctrl;
-    private int [][] tab = new int[3][3];
+    private final ControllerFront cliente;
+    private int [][] matrizCtrl = new int[3][3];
+    private Color cor;
+    private Color corOutro;
     
     /**
-     * Creates new form tela
+     * Inicia os componentes do form, Instancia o controle e as inicializa as cores
      */
     public ViewFront() {
         initComponents(); 
-        ctrl = new ControllerFront();
+        cliente = new ControllerFront();
+        cor = Color.RED;
+        corOutro = Color.BLUE;
     }
-      
     
+ 
+    
+    /**
+     * Exibe na tela o recebimento de uma nova conexão
+     * @param requisicao dados da conexão estabelecida
+     */
     public void anunciarConexao(HashMap<String, String> requisicao){             
-        if(!ctrl.isConectado()){
+        if(!cliente.isConectado()){
             info.setText("Nova solicitação de jogo");
-            ctrl.setTipoCon(requisicao.get("CONEXAO")); 
+            cliente.setTipoConexao(requisicao.get("CONEXAO")); 
             if(requisicao.get("CONEXAO").equals("UDP")){
                 porta.setText(requisicao.get("portaUDP"));
                 radioUDP.setSelected(true);
@@ -50,111 +55,196 @@ public class ViewFront extends javax.swing.JFrame {
             }     
             ip.setText(requisicao.get("ip"));
             btnOk.setText("Aceitar");
-            ctrl.trocaCor();
-            minhaCor.setBackground(ctrl.getCor());
-            desabComandos(false);            
+            trocaCor();
+            minhaCor.setBackground(cor);
+            desabilitarForm(false);            
         }else{
             info.setText("O Jogador Aceitou sua solicitação. Inicie a partida!");
         }                    
     }   
     
+    
+    
+    /**
+     * Troca a cor ao receber uma conexão quando ainda não está conectado
+     */
+    public void trocaCor(){
+        Color aux = cor;
+        cor = corOutro;
+        corOutro = aux;
+    }
+    
+    
+    
+    
+    /**
+     * Marca uma jogada na tela do outro, exibe uma mensagem e o desbloqueia
+     * @param pos Posição da jogada
+     */    
     public void setJogadaOutro(String pos){ 
         int i = Character.getNumericValue(pos.charAt(1))-1;
         int j = Character.getNumericValue(pos.charAt(2))-1;
-        tab[i][j] = 2;
-        switch(pos){
-            case "c11":
-                c11.setBackground(ctrl.getCorOutro());                
-                break;
-            case "c12":
-                c12.setBackground(ctrl.getCorOutro());
-                break;
-            case "c13":
-                c13.setBackground(ctrl.getCorOutro());
-                break;
-            case "c21":
-                c21.setBackground(ctrl.getCorOutro());
-                break;
-            case "c22":
-                c22.setBackground(ctrl.getCorOutro());
-                break;
-            case "c23":
-                c23.setBackground(ctrl.getCorOutro());
-                break;
-            case "c31":
-                c31.setBackground(ctrl.getCorOutro());
-                break;
-            case "c32":
-                c32.setBackground(ctrl.getCorOutro());
-                break;
-            case "c33":
-                c33.setBackground(ctrl.getCorOutro());
-        } 
-
-        ctrl.setBloqueio(false);
+        //Marca a jogada do outro na sua matriz de controle
+        matrizCtrl[i][j] = 2;
+        pintaOutro(pos);
+        cliente.setBloqueio(false);
         setInfo("Sua Vez!");     
     }  
     
-public void setJogadaFinalOutro(HashMap<String, String> requisicao){ 
-    String pos = requisicao.get("JOGADAFINAL");
-        int i = Character.getNumericValue(pos.charAt(1))-1;
-        int j = Character.getNumericValue(pos.charAt(2))-1;
-        tab[i][j] = 2;
+    
+    
+    /**
+     * Marca uma jogada vencedora na tela do outro e exibe uma mensagem
+     * @param requisicao Mensagem com dados da jogada final
+     */
+    public void setJogadaFinalOutro(HashMap<String, String> requisicao){ 
+        String pos = requisicao.get("JOGADAFINAL");
+        pintaOutro(pos);
+        destacaVencedor(Integer.parseInt(requisicao.get("POSVENCEDORA")));
+        setInfo("VOCÊ PERDEU :( !");   
+    }
+
+
+
+    /**
+     * Pinta uma jogada na tela do outro
+     * @param pos Posição da jogada
+     */
+    private void pintaOutro(String pos){
         switch(pos){
             case "c11":
-                c11.setBackground(ctrl.getCorOutro());                
+                c11.setBackground(corOutro);                
                 break;
             case "c12":
-                c12.setBackground(ctrl.getCorOutro());
+                c12.setBackground(corOutro);
                 break;
             case "c13":
-                c13.setBackground(ctrl.getCorOutro());
+                c13.setBackground(corOutro);
                 break;
             case "c21":
-                c21.setBackground(ctrl.getCorOutro());
+                c21.setBackground(corOutro);
                 break;
             case "c22":
-                c22.setBackground(ctrl.getCorOutro());
+                c22.setBackground(corOutro);
                 break;
             case "c23":
-                c23.setBackground(ctrl.getCorOutro());
+                c23.setBackground(corOutro);
                 break;
             case "c31":
-                c31.setBackground(ctrl.getCorOutro());
+                c31.setBackground(corOutro);
                 break;
             case "c32":
-                c32.setBackground(ctrl.getCorOutro());
+                c32.setBackground(corOutro);
                 break;
             case "c33":
-                c33.setBackground(ctrl.getCorOutro());
-        } 
-            marcar(Integer.parseInt(requisicao.get("perdeu")));
-            setInfo("VOCÊ PERDEU :( !");
-
-        
-    }    
+                c33.setBackground(corOutro);
+        }    
+    }
     
-    public int checar(){
-      int i;
+    
+    
+    /**
+     * Exibe a jogada realizada (Pinta o panel) e envia uma mensagem ao adversário, informando o local da jogada.
+     * @param panel Local em que a jogada foi feita (panel que recebeu o clique)
+     */
+    public void jogada(javax.swing.JPanel panel){ 
+        //Obtenção das coordenadas por meio do nome do objeto (panel) clicado
+        String pos = panel.getName();
+        int i = Character.getNumericValue(pos.charAt(1))-1;
+        int j = Character.getNumericValue(pos.charAt(2))-1;
+        
+        //Verifica se está na vez do jogador e a posição clicada já não foi marcada
+        if(!cliente.isBloqueado() && matrizCtrl[i][j] == 0){   
+            //Seta a jogada na matriz de controle
+            matrizCtrl[i][j] = 1;
+            
+            //Verifica se a jogada atual leva a uma vitória.
+            Integer ganhou = checaVencedor();
+            if(ganhou == 0){
+                cliente.setMsgRequisicao("JOGADA", pos);
+                setInfo("Aguarde...");
+            }else{
+                destacaVencedor(ganhou);
+                cliente.setMsgRequisicao("JOGADAFINAL", pos);
+                cliente.setMsgRequisicao("POSVENCEDORA", ganhou.toString());
+                setInfo("PARABÉNS! VOCÊ GANHOU!!!");
+            }
+            cliente.enviarRequisicao();
+            panel.setBackground(cor);            
+        }
+    }
+    
+    
+    
+    /**
+     * Inicia um pool de Thread para verificar se o seu status (cliente/frontend) recebeu a resposta de confirmação de conexão.
+     */
+    public void statusPool(){
+        (new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                    while(true){
+                        if(cliente.isConectado()){
+                            status.setText("Conectado");
+                            break;
+                        }
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(ViewFront.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    } 
+                }
+            }
+        )).start();
+    } 
+    
+    
+    /**
+     * Desabilita os comandos do formulário ao realizar ou ao receber uma requisição de conexão
+     * @param btn 
+     */
+    public void desabilitarForm(Boolean btn){
+        radioTCP.setEnabled(false);
+        radioUDP.setEnabled(false);
+        ip.setEnabled(false);
+        porta.setEnabled(false);
+        if(btn){
+            btnOk.setEnabled(false);
+        }
+    }  
+    
 
+
+    /**
+     * Verifica se a jogada atual é vencedora ou se é uma jogada comum.
+     * É feita a verificação na matriz de controle por linhas, colunas e nas diagonais
+     * @return 0(Jogada convencional), 1, 2, 3 (Venceu na linha), 4, 5, 6(Venceu na coluna), 7,8(Venceu na diagonal)
+     */
+    public int checaVencedor(){
+      int i;
+      //Verifica as Linhas
       for(i=0; i<3; i++){
-        if(tab[i][0] != 0 && tab[i][0]==tab[i][1] && tab[i][0]==tab[i][2]){             
+        if(matrizCtrl[i][0] != 0 && matrizCtrl[i][0]==matrizCtrl[i][1] && matrizCtrl[i][0]==matrizCtrl[i][2]){             
             return i+1;
         }
       }
       
+      //Verifica as colunas
       for(i=0; i<3; i++){
-        if(tab[0][i] != 0 && tab[0][i]==tab[1][i] && tab[0][i]==tab[2][i]){            
+        if(matrizCtrl[0][i] != 0 && matrizCtrl[0][i]==matrizCtrl[1][i] && matrizCtrl[0][i]==matrizCtrl[2][i]){            
             return i+4;        
         }
       }
 
-      if(tab[1][1] != 0){
-        if(tab[0][0]==tab[1][1] && tab[1][1]==tab[2][2]){
+      if(matrizCtrl[1][1] != 0){
+        //Verifica a diagonal principal
+        if(matrizCtrl[0][0]==matrizCtrl[1][1] && matrizCtrl[1][1]==matrizCtrl[2][2]){
           return 7;
         }
-
-        if(tab[0][2]==tab[1][1] && tab[1][1]==tab[2][0]){
+        //Verifica a diagonal secundária
+        if(matrizCtrl[0][2]==matrizCtrl[1][1] && matrizCtrl[1][1]==matrizCtrl[2][0]){
             return 8;
         }
       }
@@ -163,9 +253,12 @@ public void setJogadaFinalOutro(HashMap<String, String> requisicao){
     }
     
     
-    public void marcar(final int tipo){
-               
-        
+    
+    /**
+     * Exibe uma borda intermitente nos panel que possuem a jogada vencedora
+     * @param tipo 
+     */
+    public void destacaVencedor(final int tipo){
         (new Thread(
                 new Runnable() {
                     @Override
@@ -237,85 +330,41 @@ public void setJogadaFinalOutro(HashMap<String, String> requisicao){
     
 
    
-    
+    /**
+     * Exibe a porta TCP na tela
+     * @param porta Número da porta
+     */
     public void setMinhaPorta(int porta){
         minhaPorta.setText(Integer.toString(porta));
     }
     
+    
+    
+    /**
+     * Exibe a porta UDP na tela
+     * @param porta Número da porta
+     */
     public void setMinhaPortaUDP(int porta){
         minhaPortaUDP.setText(Integer.toString(porta));
     }
     
+    
+    
+    /**
+     * Exibe o IP local na tela
+     * @param ip Endereço IP
+     */
     public void setMeuIP(String ip){
         meuIP.setText(ip);
-    }
-    
-    public void jogada(javax.swing.JPanel panel){ 
-        String pos = panel.getName();
-        int i = Character.getNumericValue(pos.charAt(1))-1;
-        int j = Character.getNumericValue(pos.charAt(2))-1;
-        if(!ctrl.isBloqueado() && tab[i][j] == 0){            
-            tab[i][j] = 1;
-            Integer ganhou = checar();
-            if(ganhou == 0){
-                ctrl.setRequisicao("JOGADA", pos);
-                setInfo("Aguarde...");
-            }else{
-                marcar(ganhou);
-                ctrl.setRequisicao("JOGADAFINAL", pos);
-                ctrl.setRequisicao("perdeu", ganhou.toString());
-                setInfo("PARABÉNS! VOCÊ GANHOU!!!");
-            }
-            ctrl.enviarRequisicao();
-//            ctrl.setBloqueio(true);
-            panel.setBackground(ctrl.getCor());            
-        
-        
-        }
+        this.ip.setText(ip);
     }
     
     
     
-    public void statusPool(){
-        (new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                    while(true){
-                        if(ctrl.isConectado()){
-                            status.setText("Conectado");
-                            break;
-                        }
-                        try {
-                            Thread.sleep(200);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(ViewFront.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    } 
-                }
-            }
-        )).start();
-    } 
-    
-    public String conSelecionada(){
-        if(radioTCP.isSelected()){
-            return "TCP";
-        }else{
-            return "UDP";
-        }
-    }
-    
-    public void desabComandos(Boolean btn){
-        radioTCP.setEnabled(false);
-        radioUDP.setEnabled(false);
-        ip.setEnabled(false);
-        porta.setEnabled(false);
-        if(btn){
-            btnOk.setEnabled(false);
-        }
-    }  
-    
-    
+    /**
+     * Escreve uma mensagem no label do informações do jogador
+     * @param msg 
+     */
     public void setInfo(String msg){
         info.setText(msg);
     }
@@ -372,12 +421,17 @@ public void setJogadaFinalOutro(HashMap<String, String> requisicao){
         tipoCon.add(radioTCP);
         radioTCP.setSelected(true);
         radioTCP.setText("TCP");
+        radioTCP.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                radioTCPMouseClicked(evt);
+            }
+        });
 
         tipoCon.add(radioUDP);
         radioUDP.setText("UDP");
-        radioUDP.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                radioUDPActionPerformed(evt);
+        radioUDP.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                radioUDPMouseClicked(evt);
             }
         });
 
@@ -403,19 +457,12 @@ public void setJogadaFinalOutro(HashMap<String, String> requisicao){
 
         jLabel1.setText("IP");
 
-        ip.setText("127.0.0.1");
-        ip.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ipActionPerformed(evt);
-            }
-        });
-
         jLabel2.setText("Porta");
 
         btnOk.setText("OK");
-        btnOk.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnOkActionPerformed(evt);
+        btnOk.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnOkMouseClicked(evt);
             }
         });
 
@@ -812,86 +859,65 @@ public void setJogadaFinalOutro(HashMap<String, String> requisicao){
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void ipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_ipActionPerformed
-
-    private void radioUDPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioUDPActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_radioUDPActionPerformed
-
     private void c11MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c11MouseClicked
-        // TODO add your handling code here:
         jogada(c11);
     }//GEN-LAST:event_c11MouseClicked
     
-    
-    private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
-        ctrl.setDestino(ip.getText(), Integer.parseInt(porta.getText()));
-        String con = conSelecionada();
-        ctrl.setTipoCon(con);
-        
-        if(con.equals("UDP")){
-            ctrl.conectarUDP();
-        }else{
-            ctrl.conectarTCP();            
-        }
-        ctrl.setRequisicao("CONEXAO",con);
-        ctrl.setRequisicao("porta", minhaPorta.getText()); 
-        ctrl.setRequisicao("portaUDP", minhaPortaUDP.getText());
-        ctrl.setRequisicao("ip", meuIP.getText());
-        ctrl.setRequisicao("cor", ctrl.getCor().toString());  
+    private void c12MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c12MouseClicked
+        jogada(c12);        
+    }//GEN-LAST:event_c12MouseClicked
+
+    private void c13MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c13MouseClicked
+        jogada(c13);
+    }//GEN-LAST:event_c13MouseClicked
+
+    private void c21MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c21MouseClicked
+        jogada(c21);
+    }//GEN-LAST:event_c21MouseClicked
+
+    private void c22MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c22MouseClicked
+        jogada(c22);
+    }//GEN-LAST:event_c22MouseClicked
+
+    private void c23MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c23MouseClicked
+        jogada(c23);
+    }//GEN-LAST:event_c23MouseClicked
+
+    private void c31MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c31MouseClicked
+        jogada(c31);
+    }//GEN-LAST:event_c31MouseClicked
+
+    private void c32MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c32MouseClicked
+        jogada(c32);
+    }//GEN-LAST:event_c32MouseClicked
+
+    private void c33MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c33MouseClicked
+        jogada(c33);
+    }//GEN-LAST:event_c33MouseClicked
+
+    private void radioTCPMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_radioTCPMouseClicked
+        cliente.setTipoConexao("TCP");
+    }//GEN-LAST:event_radioTCPMouseClicked
+
+    private void radioUDPMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_radioUDPMouseClicked
+        cliente.setTipoConexao("UDP");
+    }//GEN-LAST:event_radioUDPMouseClicked
+
+    private void btnOkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnOkMouseClicked
+        cliente.conectar(ip.getText(), Integer.parseInt(porta.getText()));
+         
         try {
             Thread.sleep(200);
         } catch (InterruptedException ex) {
             Logger.getLogger(ViewFront.class.getName()).log(Level.SEVERE, null, ex);
         }
-        ctrl.enviarRequisicao();
         
-        desabComandos(true);
+        cliente.enviarRequisicao();
         
-        statusPool();                
-    }//GEN-LAST:event_btnOkActionPerformed
-
-    private void c12MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c12MouseClicked
-        // TODO add your handling code here:
-        jogada(c12);        
-    }//GEN-LAST:event_c12MouseClicked
-
-    private void c13MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c13MouseClicked
-        // TODO add your handling code here:
-        jogada(c13);
-    }//GEN-LAST:event_c13MouseClicked
-
-    private void c21MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c21MouseClicked
-        // TODO add your handling code here:
-        jogada(c21);
-    }//GEN-LAST:event_c21MouseClicked
-
-    private void c22MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c22MouseClicked
-        // TODO add your handling code here:
-        jogada(c22);
-    }//GEN-LAST:event_c22MouseClicked
-
-    private void c23MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c23MouseClicked
-        // TODO add your handling code here:
-        jogada(c23);
-    }//GEN-LAST:event_c23MouseClicked
-
-    private void c31MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c31MouseClicked
-        // TODO add your handling code here:
-        jogada(c31);
-    }//GEN-LAST:event_c31MouseClicked
-
-    private void c32MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c32MouseClicked
-        // TODO add your handling code here:
-        jogada(c32);
-    }//GEN-LAST:event_c32MouseClicked
-
-    private void c33MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_c33MouseClicked
-        // TODO add your handling code here:
-        jogada(c33);
-    }//GEN-LAST:event_c33MouseClicked
+        desabilitarForm(true);
+        
+        statusPool(); 
+    }//GEN-LAST:event_btnOkMouseClicked
 
     /**
      * @param args the command line arguments

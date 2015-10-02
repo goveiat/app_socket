@@ -38,17 +38,20 @@ public class ControllerFront extends Controller{
 
     
     /**
-     * Instancia os Maps de requisição e resposta
+     * Instancia os Maps de requisição e resposta e o tipo de conexão Default
      */
     public ControllerFront() {
         requisicao = new HashMap();
         resposta = new HashMap();
+        tipoCon = "TCP";
     }   
+    
+    
     
     /**
      * Dispara a thread de conexão do Cliente via TCP
      */
-    public void conectarTCP(){
+    public void conexaoTCP(){
         (new Thread(
                 new Runnable() {
                     @Override
@@ -64,10 +67,11 @@ public class ControllerFront extends Controller{
     }
     
     
+    
     /**
      * Dispara a thread de conexão do Cliente via UDP
      */    
-    public void conectarUDP(){
+    public void conexaoUDP(){
         (new Thread(new Runnable() {
             @Override
             public void run() {                
@@ -82,6 +86,29 @@ public class ControllerFront extends Controller{
             }
         })).start();  
     }     
+    
+    
+    
+    /**
+     * Configura o destino de comunicação do Cliente e faz a conexão
+     * @param ip    IP de Destino
+     * @param porta     Porta de Destino
+     */
+    public void conectar(String ip, Integer porta){
+        ipDestino = ip;
+        portaDestino = porta;
+        if(tipoCon.equals("TCP")){
+            conexaoTCP();
+        }else{
+            conexaoUDP();
+        }
+        
+        setMsgRequisicao("CONEXAO",tipoCon);
+        setMsgRequisicao("porta", minhaPorta.toString()); 
+        setMsgRequisicao("portaUDP", minhaPortaUDP.toString());
+        setMsgRequisicao("ip", meuIp);                 
+    }    
+    
     
     
     /**
@@ -126,6 +153,8 @@ public class ControllerFront extends Controller{
         }
     }
     
+    
+    
     /**
      * Executas a resposta de uma dada requisição
      */
@@ -145,6 +174,8 @@ public class ControllerFront extends Controller{
 
     }
     
+    
+    
     /**
      * Adiciona uma mensagem à requisição a ser enviada ao servidor.
      * A Cada requisição feita, a aplicação é bloqueada, até que ela receba uma requisição.
@@ -156,21 +187,22 @@ public class ControllerFront extends Controller{
         requisicao.put(key, msg);
     }
     
-    /**
-     * Configura o destino de comunicação do Cliente
-     * @param ip    IP de Destino
-     * @param porta     Porta de Destino
-     */
-    public void setDestino(String ip, Integer porta){
-        ipDestino = ip;
-        portaDestino = porta;
-    }
-       
+     
+    
     /**
      * Configura o tipo da Conexão a ser estabelecida
      * @param con   Tipo da Conexão (TCP ou UDP)
      */
     public void setTipoConexao(String con){
         tipoCon = con;
+    }   
+    
+    
+    
+    /**
+     * Retorna o tipo da Conexão a ser estabelecida
+     */
+    public String getTipoConexao(){
+        return tipoCon;
     }    
 }

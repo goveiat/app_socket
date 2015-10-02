@@ -14,6 +14,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -24,20 +25,17 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author thiago
+ * @author Thiago Goveia
  */
 public class ControllerBack extends Controller{
     private ServerSocket socket;
     private DatagramSocket socketUDP;
-    private Integer porta;
-    private Integer portaUDP;
     private final ViewFront view;
     private ObjectInputStream entrada;
     private ObjectOutputStream saida;    
     private HashMap<String, String> requisicao;
     private HashMap<String, String> resposta;
     private final static int TAMPACOTE = 1024 ;
-    private String ip;
  
     
 
@@ -58,11 +56,10 @@ public class ControllerBack extends Controller{
             public void run() {
                 try {
                     socket = new ServerSocket(0);
-//                   ip = socket.getInetAddress().getHostName();
-                    ip = "127.0.0.1";
-                    porta = socket.getLocalPort(); 
-                    view.setMinhaPorta(porta);
-                    view.setMeuIP(ip);
+                    meuIp = InetAddress.getLocalHost().getHostAddress();
+                    minhaPorta = socket.getLocalPort(); 
+                    view.setMinhaPorta(minhaPorta);
+                    view.setMeuIP(meuIp);
                     Socket socketCli = socket.accept();                   
 
                     while(true){
@@ -100,8 +97,8 @@ public class ControllerBack extends Controller{
                       try
                         {                           
                            socketUDP = new DatagramSocket() ;
-                           portaUDP = socketUDP.getLocalPort();
-                           view.setMinhaPortaUDP(portaUDP);
+                           minhaPortaUDP = socketUDP.getLocalPort();
+                           view.setMinhaPortaUDP(minhaPortaUDP);
                            while(true){
                                 DatagramPacket pacote = new DatagramPacket( new byte[TAMPACOTE], TAMPACOTE ) ;
 
@@ -157,15 +154,15 @@ public class ControllerBack extends Controller{
     }
     
     public Integer getPorta(){
-        return porta;
+        return minhaPorta;
     }
     
     public Integer getPortaUDP(){
-        return portaUDP;
+        return minhaPortaUDP;
     }
     
     public String getIP(){
-        return ip;
+        return meuIp;
     }
     
 }

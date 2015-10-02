@@ -15,12 +15,15 @@ import java.util.Map;
 
 /**
  *
- * @author thiago
+ * @author Thiago Goveia
  */
 public abstract class Controller {
     
-    protected static Boolean conectado;
-    protected static Boolean bloqueio;
+    protected static Boolean    conectado;
+    protected static Boolean    bloqueio;
+    protected static Integer    minhaPorta;
+    protected static Integer    minhaPortaUDP;
+    protected static String     meuIp;
     
     public byte[] serializar(Map<String, String> msg) throws IOException {
         ByteArrayOutputStream b = new ByteArrayOutputStream();

@@ -11,7 +11,7 @@ import frontEnd.ViewFront;
 
 /**
  *
- * @author thiago
+ * @author Thiago Goveia
  */
 public class Main {
     static ControllerBack servidor;
@@ -19,8 +19,10 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {        
+    public static void main(String[] args) { 
+        //Instância da Servidor da Aplicação
         servidor = new ControllerBack();
+        //Disponibiliza os Serviços como TCP e UDP
         servidor.disponibilizarServidorTCP();  
         servidor.disponibilizarServidorUDP();             
     }
